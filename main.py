@@ -4,6 +4,7 @@ from flask import request
 from flask import redirect
 from flask_cors import CORS
 import user_management as dbHandler
+import bleach
 
 # Code snippet for logging a message
 # app.logger.critical("message")
@@ -19,7 +20,7 @@ def addFeedback():
         url = request.args.get("url", "")
         return redirect(url, code=302)
     if request.method == "POST":
-        feedback = request.form["feedback"]
+        feedback = bleach.clean(request.form["feedback"])
         dbHandler.insertFeedback(feedback)
         dbHandler.listFeedback()
         return render_template("/success.html", state=True, value="Back")
@@ -34,9 +35,9 @@ def signup():
         url = request.args.get("url", "")
         return redirect(url, code=302)
     if request.method == "POST":
-        username = request.form["username"]
+        username = bleach.clean(request.form["username"])
         password = request.form["password"]
-        DoB = request.form["dob"]
+        DoB = bleach.clean(request.form["dob"])
         dbHandler.insertUser(username, password, DoB)
         return render_template("/index.html")
     else:
@@ -55,7 +56,7 @@ def home():
         msg = request.args.get("msg", "")
         return render_template("/index.html", msg=msg)
     elif request.method == "POST":
-        username = request.form["username"]
+        username = bleach.clean(request.form["username"])
         password = request.form["password"]
         isLoggedIn = dbHandler.retrieveUsers(username, password)
         if isLoggedIn:
