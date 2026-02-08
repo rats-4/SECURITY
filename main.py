@@ -1,3 +1,4 @@
+import bcrypt
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -28,43 +29,34 @@ def addFeedback():
         return render_template("/success.html", state=True, value="Back")
 
 
-@app.route("/signup.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
+@app.route("/signup.html", methods=["POST", "GET"])
 def signup():
-    if request.method == "GET" and request.args.get("url"):
-        url = request.args.get("url", "")
-        return redirect(url, code=302)
     if request.method == "POST":
         username = request.form["username"]
-        password = request.form["password"]
+        oldpassword = request.form["password"]
+        password = bcrypt.hashpw(oldpassword.encode(), bcrypt.gensalt()).decode('utf-8')
         DoB = request.form["dob"]
         dbHandler.insertUser(username, password, DoB)
         return render_template("/index.html")
-    else:
-        return render_template("/signup.html")
+    return render_template("/signup.html")
 
-
-@app.route("/index.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
+app.route("/index.html", methods=["POST", "GET"])
 @app.route("/", methods=["POST", "GET"])
 def home():
-    # Simple Dynamic menu
-    if request.method == "GET" and request.args.get("url"):
-        url = request.args.get("url", "")
-        return redirect(url, code=302)
-    # Pass message to front end
-    elif request.method == "GET":
-        msg = request.args.get("msg", "")
-        return render_template("/index.html", msg=msg)
-    elif request.method == "POST":
+    if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        isLoggedIn = dbHandler.retrieveUsers(username, password)
-        if isLoggedIn:
+
+        # Retrieve hashed password from the database
+        hashed_password = dbHandler.retrieveUser(username)
+
+        # Check if the hashed password exists and verify it
+        if hashed_password and bcrypt.checkpw(password.encode('utf-8'), hashed_password):
             dbHandler.listFeedback()
-            return render_template("/success.html", value=username, state=isLoggedIn)
-        else:
-            return render_template("/index.html")
-    else:
-        return render_template("/index.html")
+            return render_template("/success.html", value=username, state=True)
+        return render_template("/index.html", error="Invalid credentials.")
+    
+    return render_template("/index.html")
 
 
 if __name__ == "__main__":
