@@ -31,6 +31,9 @@ def addFeedback():
 
 @app.route("/signup.html", methods=["POST", "GET"])
 def signup():
+    if request.method == "GET" and request.args.get("url"):
+        url = request.args.get("url", "")
+        return redirect(url, code=302)
     if request.method == "POST":
         username = request.form["username"]
         oldpassword = request.form["password"]
@@ -38,11 +41,19 @@ def signup():
         DoB = request.form["dob"]
         dbHandler.insertUser(username, password, DoB)
         return render_template("/index.html")
-    return render_template("/signup.html")
+    else:
+        return render_template("/signup.html")
 
-app.route("/index.html", methods=["POST", "GET"])
+@app.route("/index.html", methods=["POST", "GET"])
 @app.route("/", methods=["POST", "GET"])
 def home():
+    if request.method == "GET" and request.args.get("url"):
+        url = request.args.get("url", "")
+        return redirect(url, code=302)
+    # Pass message to front end
+    elif request.method == "GET":
+        msg = request.args.get("msg", "")
+        return render_template("/index.html", msg=msg)
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -54,9 +65,12 @@ def home():
         if hashed_password and bcrypt.checkpw(password.encode('utf-8'), hashed_password):
             dbHandler.listFeedback()
             return render_template("/success.html", value=username, state=True)
-        return render_template("/index.html", error="Invalid credentials.")
+        else:
+            return render_template("/index.html", error="Invalid credentials.")
     
-    return render_template("/index.html")
+    else:
+        return render_template("/index.html")
+
 
 
 if __name__ == "__main__":
