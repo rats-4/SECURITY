@@ -44,3 +44,20 @@ def listFeedback():
         f.write(f"{row[1]}\n")
         f.write("</p>\n")
     f.close()
+
+def storeUserSecret(username, user_secret):
+    con = sql.connect("database_files/database.db")
+    cur = con.cursor()
+    cur.execute("UPDATE users SET totp_secret = ? WHERE username = ?", (user_secret, username))
+    con.commit()
+    con.close()
+
+def retrieveUserSecret(username):
+    con = sql.connect("database_files/database.db")
+    cur = con.cursor()
+    cur.execute("SELECT totp_secret FROM users WHERE username = ?", (username,))
+    user_secret = cur.fetchone()
+    con.close()
+    if user_secret:
+        return user_secret[0]  # Return the TOTP secret
+    return None
