@@ -37,7 +37,7 @@ def signup():
     if request.method == "POST":
         username = request.form["username"]
         oldpassword = request.form["password"]
-        password = bcrypt.hashpw(oldpassword.encode(), bcrypt.gensalt()).decode('utf-8')
+        password = bcrypt.hashpw(oldpassword.encode("utf-8"), bcrypt.gensalt())
         DoB = request.form["dob"]
         dbHandler.insertUser(username, password, DoB)
         return render_template("/index.html")
