@@ -28,7 +28,7 @@ def retrieveUser(username):
 def insertFeedback(feedback):
     con = sql.connect("database_files/database.db")
     cur = con.cursor()
-    cur.execute(f"INSERT INTO feedback (feedback) VALUES ('{feedback}')")
+    cur.execute("INSERT INTO feedback (feedback) VALUES (?)", (feedback,))
     con.commit()
     con.close()
 
@@ -45,12 +45,16 @@ def listFeedback():
         f.write("</p>\n")
     f.close()
 
+
 def storeUserSecret(username, user_secret):
     con = sql.connect("database_files/database.db")
     cur = con.cursor()
-    cur.execute("UPDATE users SET totp_secret = ? WHERE username = ?", (user_secret, username))
+    cur.execute(
+        "UPDATE users SET totp_secret = ? WHERE username = ?", (user_secret, username)
+    )
     con.commit()
     con.close()
+
 
 def retrieveUserSecret(username):
     con = sql.connect("database_files/database.db")
