@@ -9,22 +9,20 @@ from flask_cors import CORS
 import user_management as dbHandler
 
 app = Flask(__name__)
-app.secret_key = 'my_secret_key'
+app.secret_key = "my_secret_key"
 CORS(app)
 
-@app.route("/success.html", methods=["POST", "GET"])
-def addFeedback():
-    if request.method == "GET" and request.args.get("url"):
-        url = request.args.get("url", "")
-        return redirect(url, code=302)
+
+@app.route("/feedback", methods=["GET", "POST"])
+def feedback():
     if request.method == "POST":
-        feedback = request.form["feedback"]
+        feedback = request.form.get("feedback", "")
         dbHandler.insertFeedback(feedback)
-        dbHandler.listFeedback()
-        return render_template("/success.html", state=True, value="Back")
-    else:
-        dbHandler.listFeedback()
-        return render_template("/success.html", state=True, value="Back")
+        return redirect("/feedback")
+
+    feedback_list = dbHandler.listFeedback()
+    return render_template("success.html", feedback=feedback_list)
+
 
 @app.route("/signup.html", methods=["POST", "GET"])
 def signup():
@@ -40,6 +38,7 @@ def signup():
         return render_template("/index.html")
     else:
         return render_template("/signup.html")
+
 
 @app.route("/index.html", methods=["POST", "GET"])
 @app.route("/", methods=["POST", "GET"])
@@ -58,11 +57,12 @@ def home():
 
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password) == True:
             return redirect(f"/enable_2fa?username={username}")  # Redirect to 2FA setup
-            
+
         else:
             return render_template("/index.html", error="Invalid credentials.")
-    
+
     return render_template("/index.html")
+
 
 @app.route("/enable_2fa", methods=["GET"])
 def enable_2fa():
@@ -74,10 +74,17 @@ def enable_2fa():
 
     stream = BytesIO()
     qr_code.save(stream, format="PNG")
-    qr_code_b64 = base64.b64encode(stream.getvalue()).decode('utf-8')
+    qr_code_b64 = base64.b64encode(stream.getvalue()).decode("utf-8")
 
     # Render the 2FA setup page
-    return render_template("/2FA.html", value=username, state=True, qr_code_data=qr_code_b64, user_secret=user_secret)
+    return render_template(
+        "/2FA.html",
+        value=username,
+        state=True,
+        qr_code_data=qr_code_b64,
+        user_secret=user_secret,
+    )
+
 
 @app.route("/verify_otp", methods=["POST"])
 def verify_otp():
@@ -87,9 +94,10 @@ def verify_otp():
 
     totp = pyotp.TOTP(user_secret)
     if totp.verify(otp_input):
-        return render_template('/success.html')  # Replace with your success handling
+        return render_template("/success.html")  # Replace with your success handling
     else:
         return "Invalid OTP. Please try again.", 401
+
 
 if __name__ == "__main__":
     app.config["TEMPLATES_AUTO_RELOAD"] = True
