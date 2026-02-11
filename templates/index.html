@@ -21,6 +21,9 @@
       required
     />
   </div>
+  {% if error %}
+     <p style="color:red;">{{ error }}</p>
+  {% endif %}
   <div class="input__wrapper">
     <input type="submit" class="btn" value="Log In" />
   </div>

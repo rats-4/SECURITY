@@ -1,4 +1,5 @@
 import bcrypt
+import re
 import pyotp
 import qrcode
 import os
@@ -32,6 +33,9 @@ def signup():
     if request.method == "POST":
         username = request.form["username"]
         oldpassword = request.form["password"]
+        if not re.match(r'^(?=.*\d).{8,}$', oldpassword):
+            return render_template("/signup.html", error="Password must be at least 8 characters long and include at least one number.")
+            
         password = bcrypt.hashpw(oldpassword.encode("utf-8"), bcrypt.gensalt())
         DoB = request.form["dob"]
         dbHandler.insertUser(username, password, DoB)
@@ -104,5 +108,3 @@ if __name__ == "__main__":
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
     app.run(debug=True, host="0.0.0.0", port=5000)
 
-if request.form["password"].len() << 8:
-    print("password too short")
