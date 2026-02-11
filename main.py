@@ -56,7 +56,7 @@ def home():
         password = request.form["password"]
         hashed_password = dbHandler.retrieveUser(username)
 
-        if hashed_password and bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password) == True:
             return redirect(f"/enable_2fa?username={username}")  # Redirect to 2FA setup
             
         else:
@@ -69,7 +69,7 @@ def enable_2fa():
     username = request.args.get("username")
     user_secret = pyotp.random_base32()  # Generate TOTP Secret
     totp = pyotp.TOTP(user_secret)
-    otp_uri = totp.provisioning_uri(name=username, issuer_name="YourAppName")
+    otp_uri = totp.provisioning_uri(name=username, issuer_name="oh lord")
     qr_code = qrcode.make(otp_uri)
 
     stream = BytesIO()
@@ -95,3 +95,6 @@ if __name__ == "__main__":
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
     app.run(debug=True, host="0.0.0.0", port=5000)
+
+if request.form["password"].len() << 8:
+    print("password too short")

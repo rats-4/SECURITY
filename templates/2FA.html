@@ -1,5 +1,4 @@
-<p>2FA screen works!</p>
-<h1>Welcome Enable 2FA {{ value }}!</h1>
+<h1>Welcome {{ value }}!</h1>
 <h1>Scan this QR Code with Google Authenticator</h1>
 <img src="data:image/png;base64,{{ qr_code_data }}">
 <form action="/verify_otp" method="post">
@@ -7,5 +6,5 @@
     <input type="text" id="otp" name="otp" required><br>
     <input type="hidden" name="username" value="{{ value }}">   <!-- Username input -->
     <input type="hidden" name="user_secret" value="{{ user_secret }}">  <!-- Hidden user_secret input -->
-    <input type="submit" value="Enable 2FA">
+    <input type="submit" value="GO!">
 </form>
