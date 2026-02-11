@@ -8,11 +8,13 @@ from io import BytesIO
 from flask import Flask, render_template, request, redirect
 from flask_cors import CORS
 import user_management as dbHandler
+from flask_wtf.csrf import CSRFProtect 
 
 app = Flask(__name__)
 app.secret_key = "my_secret_key"
 CORS(app)
 
+csrf = CSRFProtect(app) 
 
 @app.route("/feedback", methods=["GET", "POST"])
 def feedback():
@@ -35,7 +37,7 @@ def signup():
         oldpassword = request.form["password"]
         if not re.match(r'^(?=.*\d).{8,}$', oldpassword):
             return render_template("/signup.html", error="Password must be at least 8 characters long and include at least one number.")
-            
+
         password = bcrypt.hashpw(oldpassword.encode("utf-8"), bcrypt.gensalt())
         DoB = request.form["dob"]
         dbHandler.insertUser(username, password, DoB)

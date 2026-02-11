@@ -2,6 +2,7 @@
 <h1>Welcome {{ value }}!</h1>
 
 <form action="/feedback" method="POST" class="box">
+  {{ csrf_token() }}
   <div class="input__wrapper">
     <input
       style="height: 100px; vertical-align: top"
