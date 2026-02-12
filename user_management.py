@@ -3,15 +3,20 @@ import time
 import random
 
 
-def insertUser(username, password, DoB):
+def insertUser(username, password):
     con = sql.connect("database_files/database.db")
-    cur = con.cursor()
-    cur.execute(
-        "INSERT INTO users (username,password,dateOfBirth) VALUES (?,?,?)",
-        (username, password, DoB),
-    )
-    con.commit()
-    con.close()
+    try:
+        con.execute("PRAGMA foreign_keys = ON")  # Enable foreign key constraints
+        cur = con.cursor()
+        cur.execute(
+            "INSERT INTO users (username, password) VALUES (?, ?)",
+            (username, password),
+        )
+        con.commit()
+    except sql.IntegrityError:  # Catch unique constraint violation
+        raise Exception("User already exists")
+    finally:
+        con.close()
 
 
 def retrieveUser(username):
@@ -27,10 +32,16 @@ def retrieveUser(username):
 
 def insertFeedback(feedback):
     con = sql.connect("database_files/database.db")
-    cur = con.cursor()
-    cur.execute("INSERT INTO feedback (feedback) VALUES (?)", (feedback,))
-    con.commit()
-    con.close()
+    try:
+        cur = con.cursor()
+        cur.execute(
+            "INSERT INTO feedback (feedback) VALUES (?)", (feedback,)
+        )
+        con.commit()
+    except Exception as e:
+        raise  # Rethrow exception for further handling
+    finally:
+        con.close()
 
 
 def listFeedback():

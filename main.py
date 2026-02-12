@@ -37,10 +37,13 @@ def signup():
         oldpassword = request.form["password"]
         if not re.match(r'^(?=.*\d).{8,}$', oldpassword):
             return render_template("/signup.html", error="Password must be at least 8 characters long and include at least one number.")
-
         password = bcrypt.hashpw(oldpassword.encode("utf-8"), bcrypt.gensalt())
-        DoB = request.form["dob"]
-        dbHandler.insertUser(username, password, DoB)
+                
+        try:
+            dbHandler.insertUser(username, password)  # Ensure this method uses a transaction in user_management.py
+        except Exception as e:
+            return render_template("/signup.html", error="Username already exists, please choose another.")
+        
         return render_template("/index.html")
     else:
         return render_template("/signup.html")
