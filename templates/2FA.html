@@ -2,7 +2,7 @@
 <h1>Scan this QR Code with Google Authenticator</h1>
 <img src="data:image/png;base64,{{ qr_code_data }}">
 <form action="/verify_otp" method="post">
-    {{ csrf_token() }}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="otp">Enter the OTP from your app:</label><br>
     <input type="text" id="otp" name="otp" required><br>
     <input type="hidden" name="username" value="{{ value }}">   <!-- Username input -->

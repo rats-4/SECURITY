@@ -8,13 +8,13 @@ from io import BytesIO
 from flask import Flask, render_template, request, redirect
 from flask_cors import CORS
 import user_management as dbHandler
-from flask_wtf.csrf import CSRFProtect 
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 app.secret_key = "my_secret_key"
 CORS(app)
 
-csrf = CSRFProtect(app) 
 
 @app.route("/feedback", methods=["GET", "POST"])
 def feedback():
@@ -35,15 +35,22 @@ def signup():
     if request.method == "POST":
         username = request.form["username"]
         oldpassword = request.form["password"]
-        if not re.match(r'^(?=.*\d).{8,}$', oldpassword):
-            return render_template("/signup.html", error="Password must be at least 8 characters long and include at least one number.")
+        if not re.match(r"^(?=.*\d).{8,}$", oldpassword):
+            return render_template(
+                "/signup.html",
+                error="Password must be at least 8 characters long and include at least one number.",
+            )
         password = bcrypt.hashpw(oldpassword.encode("utf-8"), bcrypt.gensalt())
-                
+
         try:
-            dbHandler.insertUser(username, password)  # Ensure this method uses a transaction in user_management.py
+            dbHandler.insertUser(
+                username, password
+            )  # Ensure this method uses a transaction in user_management.py
         except Exception as e:
-            return render_template("/signup.html", error="Username already exists, please choose another.")
-        
+            return render_template(
+                "/signup.html", error="Username already exists, please choose another."
+            )
+
         return render_template("/index.html")
     else:
         return render_template("/signup.html")
@@ -64,7 +71,7 @@ def home():
         password = request.form["password"]
         hashed_password = dbHandler.retrieveUser(username)
 
-        if bcrypt.checkpw(password.encode('utf-8'), hashed_password) == True:
+        if bcrypt.checkpw(password.encode("utf-8"), hashed_password) == True:
             return redirect(f"/enable_2fa?username={username}")  # Redirect to 2FA setup
 
         else:
@@ -112,4 +119,3 @@ if __name__ == "__main__":
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
     app.run(debug=True, host="0.0.0.0", port=5000)
-
