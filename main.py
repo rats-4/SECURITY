@@ -67,13 +67,21 @@ def home():
         return render_template("/index.html", msg=msg)
 
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if not username or not password:
+            return render_template(
+                "/index.html", error="Username and password are required."
+            )
+
         hashed_password = dbHandler.retrieveUser(username)
 
-        if bcrypt.checkpw(password.encode("utf-8"), hashed_password) == True:
-            return redirect(f"/enable_2fa?username={username}")  # Redirect to 2FA setup
+        if hashed_password is None:  # Check if the user exists
+            return render_template("/index.html", error="User not found.")
 
+        if bcrypt.checkpw(password.encode("utf-8"), hashed_password):
+            return redirect(f"/enable_2fa?username={username}")  # Redirect to 2FA setup
         else:
             return render_template("/index.html", error="Invalid credentials.")
 
